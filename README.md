@@ -6,6 +6,7 @@ This repository contains tools to generate synthetic image artifacts and train d
 
 ## Project Structure
 
+```bash
 project-root/
 ├── generator.py          # CLI for generating artifact images
 ├── train_model.py        # CLI for training models on generated data
@@ -14,6 +15,7 @@ project-root/
 │   └── DeepLearningCV/   # Neural network models & training functions
 ├── outputs/              # Generated data and trained models (ignored by Git)
 └── README.md
+```
 
 ---
 
