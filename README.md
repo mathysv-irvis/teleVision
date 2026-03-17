@@ -6,7 +6,7 @@ This repository contains tools to generate synthetic image artifacts and train d
 
 ## Project Structure
 
-.
+project-root/
 ├── generator.py          # CLI for generating artifact images
 ├── train_model.py        # CLI for training models on generated data
 ├── scripts/
