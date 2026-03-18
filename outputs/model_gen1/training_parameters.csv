@@ -1,0 +1,2 @@
+net,epochs,batch_size,lr,im_size,training_size,probs
+tinynet,3,8,0.001,128,0.8,0.3
