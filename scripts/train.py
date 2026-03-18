@@ -5,14 +5,12 @@ from tqdm import tqdm
 
 from .trainer import Trainer
 
-def train(net, classes, epoch_size, batch_size, dataset_path, save_path):
+def train(net, epoch_size, batch_size, dataset_path, save_path):
 
     os.makedirs(save_path, exist_ok=True)
 
     trainer = Trainer(net=net,
-                      classes=classes,
                       batch_size=batch_size,
-                      im_size=128,
                       dataset_path=dataset_path,
                       save_path=save_path)
 

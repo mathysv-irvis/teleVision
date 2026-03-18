@@ -4,7 +4,6 @@ from scripts.train import train
 from scripts.DeepLearningCV.models import TinyNet, Net
 
 def run_training(model_name, batch_size, epoch_size, gen_name):
-    classes = ("pixel_art", "color_art", "column_art")
     
     # Select the model class
     if model_name.lower() == "tinynet":
@@ -17,7 +16,7 @@ def run_training(model_name, batch_size, epoch_size, gen_name):
     dataset_path = f"outputs/{gen_name}/"
     save_path = f"./outputs/model_{gen_name}/"
 
-    train(net, classes, epoch_size, batch_size, dataset_path, save_path)
+    train(net, epoch_size, batch_size, dataset_path, save_path)
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Train a model on generated data.")
@@ -37,4 +36,4 @@ if __name__ == "__main__":
 
     python train_model.py --model TinyNet --batch 8 --epochs 1 --gen gen1
     python train_model.py --model Net --batch 16 --epochs 5 --gen gen2
-    '''
+'''

@@ -9,14 +9,15 @@ import torch.nn as nn
 import torch
 
 from .DeepLearningCV.preprocess import ArtifactDataset
+from .constant import PROBS, IM_SIZE, CLASSES, TRAINING_SIZE, LEARNING_RATE
 
 class Trainer:
 
-    def __init__(self, net, classes, batch_size, im_size, dataset_path, save_path):
+    def __init__(self, net, batch_size, dataset_path, save_path):
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-        self.im_size    = im_size
-        self.classes = classes
+        self.im_size    = IM_SIZE
+        self.classes = CLASSES
         self.class_size = len(self.classes)
         
         self.net = net(self.class_size).to(self.device)
@@ -57,11 +58,11 @@ class Trainer:
         y_pred_np = y_pred.cpu().numpy()
         return f1_score(y_true_np, y_pred_np, average="samples")
 
-    def preprocess(self, train_proportion=0.8):
+    def preprocess(self):
 
         # SPLIT DATA
         total_size = len(self.dataset)
-        train_size = int(train_proportion * total_size)
+        train_size = int(TRAINING_SIZE * total_size)
         test_size = total_size - train_size
 
         self.train_dataset, self.test_dataset = random_split(self.dataset, [train_size, test_size])
@@ -70,7 +71,7 @@ class Trainer:
         self.testloader  = DataLoader(self.test_dataset, batch_size=self.batch_size, shuffle=False, num_workers=0)
 
         self.criterion = self.get_criterion()
-        self.optimizer = optim.Adam(self.net.parameters(), lr=1e-3)
+        self.optimizer = optim.Adam(self.net.parameters(), lr=LEARNING_RATE)
 
     def batchshow(self):
         # SHOW BATCH
@@ -99,7 +100,7 @@ class Trainer:
     def get_output(self, inputs):
         outputs = self.net(inputs)
         probs = torch.sigmoid(outputs)
-        preds = (probs > 0.3).float()
+        preds = (probs > PROBS).float()
         return outputs, probs, preds
 
 
