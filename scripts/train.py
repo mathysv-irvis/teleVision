@@ -11,12 +11,13 @@ import torch.optim as optim
 import torch.nn as nn
 import torch
 
+from .DeepLearningCV.models import Net, TinyNet
 from .DeepLearningCV.preprocess import ArtifactDataset
 from .constant import PROBS, IM_SIZE, CLASSES, TRAINING_SIZE, LEARNING_RATE
 
 class Trainer:
 
-    def __init__(self, net, dataset_path, save_path, batch_size=None, test=False):
+    def __init__(self, dataset_path, save_path, net=None, batch_size=None, test=False):
         
         if os.path.isdir(save_path) and not test:
 
@@ -56,19 +57,22 @@ class Trainer:
             self._metrics_df    = pd.read_csv(self.metrics_file)
             self.parameters_df  = pd.read_csv(self.parameters_file)
             self.batch_size     = int(self.parameters_df["batch_size"][0])
-        
+            self.setup_net_type()
         else:
             os.makedirs(self.save_model, exist_ok=True)
+            
+            self._net = net(self.class_size).to(self.device)
             
             self._metrics_df = pd.DataFrame(columns=["epoch", "loss", "f1_score"])
             self._metrics_df.to_csv(self.metrics_file, index=False)
            
-            self.parameters_df = pd.DataFrame(columns=["epochs", "batch_size", "lr", "im_size", "training_size", "probs"])
+            self.parameters_df = pd.DataFrame(columns=["net", "epochs", "batch_size", "lr", "im_size", "training_size", "probs"])
             self.parameters_df["batch_size"]    = [self.batch_size]
             self.parameters_df["lr"]            = [LEARNING_RATE]
             self.parameters_df["training_size"] = [TRAINING_SIZE]
             self.parameters_df["im_size"]       = [IM_SIZE]
             self.parameters_df["probs"]         = [PROBS]
+            self.parameters_df["net"]           = [self._net.name]
             self.parameters_df.to_csv(self.parameters_file, index=False)
 
         self.dataset_path = dataset_path
@@ -79,11 +83,19 @@ class Trainer:
 
     @property
     def net(self):
-        return self._net
+        return self._net 
 
     @property
     def metrics(self):
         return self._metrics_df.copy()
+
+    def setup_net_type(self):
+        if self.parameters_df["net"][0] == "net":
+            self._net = Net(self.class_size).to(self.device)
+        
+        elif self.parameters_df["net"][0] == "tinynet":
+            self._net = TinyNet(self.class_size).to(self.device)
+
 
     def get_f1_score(self, y_true, y_pred):
         return f1_score(

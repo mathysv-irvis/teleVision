@@ -8,6 +8,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 class Net(nn.Module):
     def __init__(self, num_classes):
         super().__init__()
+        self.name="net"
 
         self.backbone = nn.Sequential(
             nn.Conv2d(3,32,3,padding=1), nn.ReLU(), nn.MaxPool2d(2),
@@ -28,6 +29,7 @@ class Net(nn.Module):
 class TinyNet(nn.Module):
     def __init__(self, num_classes):
         super().__init__()
+        self.name = "tinynet"
         self.conv = nn.Conv2d(3,16,3,padding=1)
         self.pool = nn.AdaptiveAvgPool2d(1)
         self.fc = nn.Linear(16, num_classes)
