@@ -15,7 +15,7 @@ from .constant import PROBS, IM_SIZE, CLASSES, TRAINING_SIZE, LEARNING_RATE
 
 class Trainer:
 
-    def __init__(self, net, batch_size, dataset_path, save_path, test=False):
+    def __init__(self, net, dataset_path, save_path, batch_size=None, test=False):
         
         if os.path.isdir(save_path) and not test:
 
@@ -54,6 +54,7 @@ class Trainer:
         if test:
             self.metrics_df     = pd.read_csv(self.metrics_file)
             self.parameters_df  = pd.read_csv(self.parameters_file)
+            self.batch_size     = int(self.parameters_df["batch_size"][0])
         
         else:
             os.makedirs(self.save_model, exist_ok=True)
