@@ -75,11 +75,6 @@ class Trainer:
 
         self.preprocess()
 
-    def imshow(img):
-        img = img / 2 + 0.5
-        plt.imshow(np.transpose(im.numpy(), (1, 2, 0)))
-        plt.show()
-
     def get_f1_score(self, y_true, y_pred):
         y_pred    = torch.cat(y_pred, 0)
         y_true    = torch.cat(y_true, 0)
