@@ -4,7 +4,7 @@ import shutil
 import pandas as pd
 
 from tqdm import tqdm
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score, accuracy_score
 from torch.utils.data import DataLoader, random_split
 import torchvision.transforms as transforms
 import torch.optim as optim
@@ -86,11 +86,12 @@ class Trainer:
         return self._metrics_df.copy()
 
     def get_f1_score(self, y_true, y_pred):
-        y_pred    = torch.cat(y_pred, 0)
-        y_true    = torch.cat(y_true, 0)
-        y_true_np = y_true.cpu().numpy()
-        y_pred_np = y_pred.cpu().numpy()
-        return f1_score(y_true_np, y_pred_np, average="samples")
+        return f1_score(
+            y_true,
+            y_pred,
+            average="micro",
+            zero_division=0
+        )
 
     def preprocess(self):
 
@@ -137,6 +138,43 @@ class Trainer:
         preds = (probs > PROBS).float()
         return outputs, probs, preds
 
+    def predict(self, dataloader):
+
+        self.net.eval()
+
+        all_preds = []
+        all_labels = []
+
+        total = len(dataloader.dataset)
+        seen = 0
+
+        loop = tqdm(
+            dataloader,
+            desc="Eval",
+            total=len(dataloader),
+            leave=False
+        )
+
+        with torch.no_grad():
+            for images, labels in loop:
+
+                bs = labels.size(0)
+                seen += bs
+
+                images = images.to(self.device)
+                labels = labels.float().to(self.device)
+
+                _, _, preds = self.get_output(images)
+
+                all_preds.append(preds.cpu())
+                all_labels.append(labels.cpu())
+
+                loop.set_postfix(samples=f"{seen}/{total}")
+
+        y_pred = torch.cat(all_preds).numpy()
+        y_true = torch.cat(all_labels).numpy()
+
+        return y_true, y_pred
 
     def save_checkpoint(self, epoch, loss, f1):
         self.parameters_df["epochs"] = [epoch]
@@ -172,23 +210,14 @@ class Trainer:
 
             loop.set_postfix(loss=running_loss / (loop.n+1))
 
-        epoch_loss = running_loss / len(self._trainloader)
+            epoch_loss = running_loss / len(self._trainloader)
+        
+            y_true, y_pred = self.predict(self._trainloader)
+            epoch_f1 = self.get_f1_score(y_true, y_pred)
+            accuracy = accuracy_score(y_true, y_pred)
 
-        # --- Evaluate F1 on train ---
-        self.net.eval()
-        all_preds, all_labels = [], []
-        with torch.no_grad():
-            eval_loop = tqdm(self._trainloader, desc=f"Eval Epoch {epoch+1}", leave=False)
-            for inputs, labels in eval_loop:
-                inputs, labels = inputs.to(self.device), labels.float().to(self.device)
-                outputs, probs, preds = self.get_output(inputs)
-                all_preds.append(preds)
-                all_labels.append(labels)
+            print(f"Epoch {epoch+1} | Loss: {epoch_loss:.4f} | Train Acc: {accuracy:.4f} | Train F1: {epoch_f1:.4f}")
 
-        epoch_f1 = self.get_f1_score(all_labels, all_preds)
-
-        print(f"Epoch {epoch+1} | Loss: {epoch_loss:.4f} | Train F1: {epoch_f1:.4f}")
-
-        self.save_checkpoint(epoch+1, epoch_loss, epoch_f1)
+            self.save_checkpoint(epoch+1, epoch_loss, epoch_f1)
 
 
