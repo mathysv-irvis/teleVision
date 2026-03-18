@@ -36,7 +36,7 @@ class Trainer:
         self.classes = CLASSES
         self.class_size = len(self.classes)
         
-        self.net = net(self.class_size).to(self.device)
+        self._net = net(self.class_size).to(self.device)
         self.batch_size = batch_size
        
         transform = transforms.Compose([
@@ -52,15 +52,15 @@ class Trainer:
         self.parameters_file = os.path.join(self.save_dir, "training_parameters.csv")
         
         if test:
-            self.metrics_df     = pd.read_csv(self.metrics_file)
+            self._metrics_df    = pd.read_csv(self.metrics_file)
             self.parameters_df  = pd.read_csv(self.parameters_file)
             self.batch_size     = int(self.parameters_df["batch_size"][0])
         
         else:
             os.makedirs(self.save_model, exist_ok=True)
             
-            self.metrics_df = pd.DataFrame(columns=["epoch", "loss", "f1_score"])
-            self.metrics_df.to_csv(self.metrics_file, index=False)
+            self._metrics_df = pd.DataFrame(columns=["epoch", "loss", "f1_score"])
+            self._metrics_df.to_csv(self.metrics_file, index=False)
            
             self.parameters_df = pd.DataFrame(columns=["epochs", "batch_size", "lr", "im_size", "training_size", "probs"])
             self.parameters_df["batch_size"]    = [self.batch_size]
@@ -75,6 +75,14 @@ class Trainer:
         self.dataset = ArtifactDataset(os.path.join(self.dataset_path, self.dataset_df), transform=transform)
 
         self.preprocess()
+
+    @property
+    def net(self):
+        return self._net
+
+    @property
+    def metrics(self):
+        return self._metrics_df.copy()
 
     def get_f1_score(self, y_true, y_pred):
         y_pred    = torch.cat(y_pred, 0)
@@ -92,15 +100,15 @@ class Trainer:
 
         self.train_dataset, self.test_dataset = random_split(self.dataset, [train_size, test_size])
 
-        self.trainloader = DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=0)
-        self.testloader  = DataLoader(self.test_dataset, batch_size=self.batch_size, shuffle=False, num_workers=0)
+        self._trainloader = DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=0)
+        self._testloader  = DataLoader(self.test_dataset, batch_size=self.batch_size, shuffle=False, num_workers=0)
 
-        self.criterion = self.get_criterion()
-        self.optimizer = optim.Adam(self.net.parameters(), lr=LEARNING_RATE)
+        self._criterion = self.get_criterion()
+        self._optimizer = optim.Adam(self._net.parameters(), lr=LEARNING_RATE)
 
     def batchshow(self):
         # SHOW BATCH
-        dataiter = iter(self.trainloader)
+        dataiter = iter(self._trainloader)
         images, labels = next(dataiter)
         imshow(torchvision.utils.make_grid(images))
 
@@ -123,7 +131,7 @@ class Trainer:
         return  nn.BCEWithLogitsLoss(pos_weight=pos_weight)
 
     def get_output(self, inputs):
-        outputs = self.net(inputs)
+        outputs = self._net(inputs)
         probs = torch.sigmoid(outputs)
         preds = (probs > PROBS).float()
         return outputs, probs, preds
@@ -134,7 +142,14 @@ class Trainer:
         self.parameters_df.to_csv(self.parameters_file, index=False)
         
         new_row = pd.DataFrame([{"epoch": epoch, "loss": loss, "f1_score": f1}])
-        self.metrics_df = pd.concat([self.metrics_df, new_row], ignore_index=True)
-        self.metrics_df.to_csv(self.metrics_file, index=False)
+        self._metrics_df = pd.concat([self._metrics_df, new_row], ignore_index=True)
+        self._metrics_df.to_csv(self.metrics_file, index=False)
         
-        torch.save(self.net.state_dict(), os.path.join(self.save_model, f"model_epoch{epoch:03d}.pth"))
+        torch.save(self._net.state_dict(), os.path.join(self.save_model, f"model_epoch{epoch:03d}.pth"))
+
+
+    def load_net(self, epoch_to_load):
+        self._net.load_state_dict(torch.load(os.path.join(self.save_model, f"model_epoch{epoch_to_load:03d}.pth")))
+
+    
+

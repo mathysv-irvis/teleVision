@@ -16,27 +16,27 @@ def train(net, epoch_size, batch_size, dataset_path, save_path):
         trainer.net.train()
         running_loss = 0.0
 
-        loop = tqdm(trainer.trainloader, desc=f"Epoch {epoch+1}/{epoch_size}", leave=False)
+        loop = tqdm(trainer._trainloader, desc=f"Epoch {epoch+1}/{epoch_size}", leave=False)
         for inputs, labels in loop:
             inputs, labels = inputs.to(trainer.device), labels.float().to(trainer.device)
 
-            trainer.optimizer.zero_grad()
+            trainer._optimizer.zero_grad()
             outputs = trainer.net(inputs)
-            loss = trainer.criterion(outputs, labels)
+            loss = trainer._criterion(outputs, labels)
             loss.backward()
-            trainer.optimizer.step()
+            trainer._optimizer.step()
 
             running_loss += loss.item()
 
             loop.set_postfix(loss=running_loss / (loop.n+1))
 
-        epoch_loss = running_loss / len(trainer.trainloader)
+        epoch_loss = running_loss / len(trainer._trainloader)
 
         # --- Evaluate F1 on train ---
         trainer.net.eval()
         all_preds, all_labels = [], []
         with torch.no_grad():
-            eval_loop = tqdm(trainer.trainloader, desc=f"Eval Epoch {epoch+1}", leave=False)
+            eval_loop = tqdm(trainer._trainloader, desc=f"Eval Epoch {epoch+1}", leave=False)
             for inputs, labels in eval_loop:
                 inputs, labels = inputs.to(trainer.device), labels.float().to(trainer.device)
                 outputs, probs, preds = trainer.get_output(inputs)
