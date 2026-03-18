@@ -1,6 +1,6 @@
 # train_model.py
 import argparse
-from scripts.train import train
+from scripts.train import Trainer
 from scripts.DeepLearningCV.models import TinyNet, Net
 
 def run_training(model_name, batch_size, epoch_size, gen_name):
@@ -16,7 +16,11 @@ def run_training(model_name, batch_size, epoch_size, gen_name):
     dataset_path = f"outputs/{gen_name}/"
     save_path = f"./outputs/model_{gen_name}/"
 
-    train(net, epoch_size, batch_size, dataset_path, save_path)
+    trainer = Trainer(net=net,
+                      batch_size=batch_size,
+                      dataset_path=dataset_path,
+                      save_path=save_path)
+    trainer.fit(epoch_size)
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Train a model on generated data.")
