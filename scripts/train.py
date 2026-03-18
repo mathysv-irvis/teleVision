@@ -7,8 +7,6 @@ from .trainer import Trainer
 
 def train(net, epoch_size, batch_size, dataset_path, save_path):
 
-    os.makedirs(save_path, exist_ok=True)
-
     trainer = Trainer(net=net,
                       batch_size=batch_size,
                       dataset_path=dataset_path,
@@ -49,10 +47,6 @@ def train(net, epoch_size, batch_size, dataset_path, save_path):
 
         print(f"Epoch {epoch+1} | Loss: {epoch_loss:.4f} | Train F1: {epoch_f1:.4f}")
 
-        checkpoint_path = os.path.join(save_path, f"artifact_epoch{epoch+1:03d}.pth")
-        trainer.save_checkpoint(checkpoint_path)
+        trainer.save_checkpoint(epoch+1, epoch_loss, epoch_f1)
 
-        new_row = pd.DataFrame([{"epoch": epoch+1, "loss": epoch_loss, "f1_score": epoch_f1}])
-        trainer.metrics_df = pd.concat([trainer.metrics_df, new_row], ignore_index=True)
-        trainer.metrics_df.to_csv(trainer.metrics_file, index=False)
 

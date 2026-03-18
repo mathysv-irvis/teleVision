@@ -1,4 +1,6 @@
 import os
+import sys
+import shutil
 import pandas as pd
 
 from sklearn.metrics import f1_score
@@ -13,7 +15,21 @@ from .constant import PROBS, IM_SIZE, CLASSES, TRAINING_SIZE, LEARNING_RATE
 
 class Trainer:
 
-    def __init__(self, net, batch_size, dataset_path, save_path):
+    def __init__(self, net, batch_size, dataset_path, save_path, test=False):
+        
+        if os.path.isdir(save_path) and not test:
+
+            res = input(
+                f"The path '{save_path}' already exists! Continue and overwrite? (y/N): "
+            )
+
+            if res.lower() != "y":
+                print("Abort training, exiting...")
+                sys.exit(0)
+            else:
+                shutil.rmtree(save_path)
+                os.makedirs(save_path)
+
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
         self.im_size    = IM_SIZE
@@ -21,6 +37,7 @@ class Trainer:
         self.class_size = len(self.classes)
         
         self.net = net(self.class_size).to(self.device)
+        self.batch_size = batch_size
        
         transform = transforms.Compose([
             transforms.Resize((self.im_size, self.im_size)),
@@ -28,21 +45,33 @@ class Trainer:
             transforms.ToTensor()
         ])
 
-        self.save_dir = os.path.join(save_path, "models")
-        os.makedirs(self.save_dir, exist_ok=True)
-        self.metrics_file = os.path.join(self.save_dir, "training_metrics.csv")
         
-        if not os.path.exists(self.metrics_file):
+        self.save_dir   = os.path.join(save_path)
+        self.save_model = os.path.join(save_path, "models")
+        self.metrics_file = os.path.join(self.save_dir, "training_metrics.csv")
+        self.parameters_file = os.path.join(self.save_dir, "training_parameters.csv")
+        
+        if test:
+            self.metrics_df     = pd.read_csv(self.metrics_file)
+            self.parameters_df  = pd.read_csv(self.parameters_file)
+        
+        else:
+            os.makedirs(self.save_model, exist_ok=True)
+            
             self.metrics_df = pd.DataFrame(columns=["epoch", "loss", "f1_score"])
             self.metrics_df.to_csv(self.metrics_file, index=False)
-        else:
-            self.metrics_df = pd.read_csv(self.metrics_file)
+           
+            self.parameters_df = pd.DataFrame(columns=["epochs", "batch_size", "lr", "im_size", "training_size", "probs"])
+            self.parameters_df["batch_size"]    = [self.batch_size]
+            self.parameters_df["lr"]            = [LEARNING_RATE]
+            self.parameters_df["training_size"] = [TRAINING_SIZE]
+            self.parameters_df["im_size"]       = [IM_SIZE]
+            self.parameters_df["probs"]         = [PROBS]
+            self.parameters_df.to_csv(self.parameters_file, index=False)
 
         self.dataset_path = dataset_path
         self.dataset_df   = "df_"+self.dataset_path.split("/")[-2]+".csv"
         self.dataset = ArtifactDataset(os.path.join(self.dataset_path, self.dataset_df), transform=transform)
-
-        self.batch_size = batch_size
 
         self.preprocess()
 
@@ -104,6 +133,12 @@ class Trainer:
         return outputs, probs, preds
 
 
-    def save_checkpoint(self, save_path):
-        torch.save(self.net.state_dict(), save_path)
-
+    def save_checkpoint(self, epoch, loss, f1):
+        self.parameters_df["epochs"] = [epoch]
+        self.parameters_df.to_csv(self.parameters_file, index=False)
+        
+        new_row = pd.DataFrame([{"epoch": epoch, "loss": loss, "f1_score": f1}])
+        self.metrics_df = pd.concat([self.metrics_df, new_row], ignore_index=True)
+        self.metrics_df.to_csv(self.metrics_file, index=False)
+        
+        torch.save(self.net.state_dict(), os.path.join(self.save_model, f"model_epoch{epoch:03d}.pth"))
