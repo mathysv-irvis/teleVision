@@ -38,7 +38,6 @@ class Trainer:
         self.classes = CLASSES
         self.class_size = len(self.classes)
         
-        self._net = net(self.class_size).to(self.device)
         self.batch_size = batch_size
        
         transform = transforms.Compose([
