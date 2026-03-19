@@ -13,7 +13,7 @@ import torch
 
 from .DeepLearningCV.models import Net, TinyNet
 from .DeepLearningCV.preprocess import ArtifactDataset
-from .constant import PROBS, IM_SIZE, CLASSES, TRAINING_SIZE, LEARNING_RATE
+from .constant import PROBS, IM_SIZE, CLASSES, TRAINING_SIZE, LEARNING_RATE, TEMPERATURE
 
 class Trainer:
 
@@ -145,8 +145,9 @@ class Trainer:
 
     def get_output(self, inputs):
         outputs = self._net(inputs)
-        probs = torch.sigmoid(outputs)
+        probs = torch.sigmoid(outputs/TEMPERATURE)
         preds = (probs > PROBS).float()
+        print(probs)
         return outputs, probs, preds
 
     def predict(self, dataloader):
