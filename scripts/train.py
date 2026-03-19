@@ -13,7 +13,7 @@ import torch
 
 from .DeepLearningCV.models import Net, TinyNet
 from .DeepLearningCV.preprocess import ArtifactDataset
-from .constant import PROBS, IM_SIZE, CLASSES, TRAINING_SIZE, LEARNING_RATE, TEMPERATURE
+from .constant import PROBS, IM_SIZE, CLASSES, TRAINING_SIZE, LEARNING_RATE
 
 class Trainer:
 
@@ -40,12 +40,17 @@ class Trainer:
         
         self.batch_size = batch_size
        
+        #transform = transforms.Compose([
+        #    transforms.Resize((self.im_size, self.im_size)),
+        #    #transforms.RandomRotation(10),
+        #    transforms.ToTensor()
+        #])
         transform = transforms.Compose([
             transforms.Resize((self.im_size, self.im_size)),
-            #transforms.RandomRotation(10),
-            transforms.ToTensor()
+            transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.5,0.5,0.5], std=[0.5,0.5,0.5])
         ])
-
         
         self.save_dir   = os.path.join(save_path)
         self.save_model = os.path.join(save_path, "models")
@@ -118,6 +123,8 @@ class Trainer:
 
         self._criterion = self.get_criterion()
         self._optimizer = optim.Adam(self._net.parameters(), lr=LEARNING_RATE)
+        #self._criterion = nn.CrossEntropyLoss()
+        #self._optimizer = optim.SGD(self._net.parameters(), lr=LEARNING_RATE, momentum=0.9)
 
     def batchshow(self):
         # SHOW BATCH
@@ -145,7 +152,7 @@ class Trainer:
 
     def get_output(self, inputs):
         outputs = self._net(inputs)
-        probs = torch.sigmoid(outputs/TEMPERATURE)
+        probs = torch.sigmoid(outputs)
         preds = (probs > PROBS).float()
         print(probs)
         return outputs, probs, preds
@@ -203,9 +210,9 @@ class Trainer:
 
     
     def fit(self, epoch_size):
+        running_loss = 0.0
+        self._net.train()
         for epoch in range(epoch_size):
-            self._net.train()
-            running_loss = 0.0
 
             loop = tqdm(self._trainloader, desc=f"Epoch {epoch+1}/{epoch_size}", leave=False)
             for inputs, labels in loop:
