@@ -176,7 +176,6 @@ class Trainer:
                 labels = labels.float().to(self.device)
 
                 _, _, preds = self.get_output(images)
-
                 all_preds.append(preds.cpu())
                 all_labels.append(labels.cpu())
 
@@ -215,17 +214,17 @@ class Trainer:
                 outputs = self.net(inputs)
                 loss = self._criterion(outputs, labels)
                 loss.backward()
-            self._optimizer.step()
+                self._optimizer.step()
 
-            running_loss += loss.item()
-
-            loop.set_postfix(loss=running_loss / (loop.n+1))
+                running_loss += loss.item()
+                loop.set_postfix(loss=running_loss / (loop.n+1))
 
             epoch_loss = running_loss / len(self._trainloader)
         
             y_true, y_pred = self.predict(self._trainloader)
             epoch_f1 = self.get_f1_score(y_true, y_pred)
-            accuracy = accuracy_score(y_true, y_pred)
+            #accuracy = accuracy_score(y_true, y_pred)
+            accuracy = (y_true==y_pred).mean()
 
             print(f"Epoch {epoch+1} | Loss: {epoch_loss:.4f} | Train Acc: {accuracy:.4f} | Train F1: {epoch_f1:.4f}")
 

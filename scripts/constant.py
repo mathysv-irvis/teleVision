@@ -1,5 +1,5 @@
 # TRAINER
-PROBS         = 0.3
+PROBS         = 0.5
 IM_SIZE       = 128
 CLASSES       = ("pixel_art", "color_art", "column_art")
 TRAINING_SIZE = 0.8
