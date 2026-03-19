@@ -1,24 +1,15 @@
 import os
 import argparse
-from scripts.train import Trainer
-from scripts.DeepLearningCV.models import TinyNet, Net
+from scripts import Trainer
 
 def run_training(dataset_path, model_name, batch_size, epoch_size, gen_name):
 
     if not os.path.exists(dataset_path):
         raise ValueError(f"{dataset_path} not found !")
 
-    # Select the model class
-    if model_name.lower() == "tinynet":
-        net = TinyNet
-    elif model_name.lower() == "net":
-        net = Net
-    else:
-        raise ValueError("Invalid model_name. Choose 'TinyNet' or 'Net'.")
-
     save_path = f"./outputs/model_{gen_name}/"
 
-    trainer = Trainer(net=net,
+    trainer = Trainer(net_name=model_name.lower(),
                       batch_size=batch_size,
                       dataset_path=dataset_path,
                       save_path=save_path)

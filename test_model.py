@@ -1,7 +1,6 @@
 import argparse
 import os
-from scripts.test import show_training, show_batch, accuracy_test
-from scripts.train import Trainer
+from scripts import show_training, show_batch, accuracy_test, Trainer
 
 def get_last_epoch(save_path):
     """Find the last epoch file in the save folder"""

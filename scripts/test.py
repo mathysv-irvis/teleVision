@@ -1,11 +1,11 @@
+from sklearn.metrics import precision_score, accuracy_score
 from torchvision.utils import make_grid
 from torch import no_grad
-from sklearn.metrics import precision_score, accuracy_score
 
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .constant import CLASSES
+from .utils import CLASSES
 from .train import Trainer
 
 def show_training(metrics_df):

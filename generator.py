@@ -1,5 +1,4 @@
-# generator.py
-from scripts.camera import Camera
+from scripts import Camera
 import pandas as pd
 import random
 import os
