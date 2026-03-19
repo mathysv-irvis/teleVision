@@ -147,7 +147,7 @@ class Trainer:
         pos_counts = df_data[["pixel_art", "color_art", "column_art"]].sum().values
         neg_counts = len(df_data) - pos_counts
         pos_weight = torch.tensor(neg_counts / pos_counts, dtype=torch.float32).to(self.device)
-
+        pos_weight = torch.clamp(pos_weight, max=10.0)
         return  nn.BCEWithLogitsLoss(pos_weight=pos_weight)
 
     def get_output(self, inputs):

@@ -62,9 +62,11 @@ python train_model.py --model <TinyNet|Net> --batch <batch_size> --epochs <num_e
 Examples:
 
 ```python
-python train_model.py --model TinyNet --batch 8 --epochs 1 --gen gen1
-python train_model.py --model Net --batch 16 --epochs 5 --gen gen2
+python train_model.py --data ./outputs/data --model TinyNet --batch 8 --epochs 1 --name gen1
+python train_model.py --data ./outputs/data --model Net --batch 16 --epochs 5 --name gen2
 ```
+
+--data : Data path to train on
 
 --model : Network to train (TinyNet or Net)
 
@@ -72,7 +74,7 @@ python train_model.py --model Net --batch 16 --epochs 5 --gen gen2
 
 --epochs: Number of epochs
 
---gen : Generation folder to train on
+--name : Generation name
 
 
 ### Test a Model
