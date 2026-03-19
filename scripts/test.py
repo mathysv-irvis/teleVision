@@ -10,11 +10,16 @@ from .train import Trainer
 
 def show_training(metrics_df):
     plt.figure(figsize=(10,5))
-    plt.scatter(metrics_df["epoch"], metrics_df["loss"], label="Loss")
-    plt.scatter(metrics_df["epoch"], metrics_df["f1_score"], label="F1 Score")
+    plt.plot(metrics_df["epoch"], metrics_df["loss"], label="Loss")
+    plt.plot(metrics_df["epoch"], metrics_df["f1_score"], label="F1 Score", linestyle="dashdot")
+    plt.plot(metrics_df["epoch"], metrics_df["accuracy"], label="Accuracy score", linestyle="dotted")
     plt.xlabel("Epoch")
     plt.ylabel("Metric")
+    plt.title("Evolution of metrics thru epochs")
+
     plt.legend()
+    plt.grid()
+    plt.tight_layout()
     plt.show()
 
 def imshow(img, title=None):

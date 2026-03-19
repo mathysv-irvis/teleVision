@@ -62,7 +62,7 @@ class Trainer:
             
             self._net = net(self.class_size).to(self.device)
             
-            self._metrics_df = pd.DataFrame(columns=["epoch", "loss", "f1_score"])
+            self._metrics_df = pd.DataFrame(columns=["epoch", "loss", "f1_score", "accuracy"])
             self._metrics_df.to_csv(self.metrics_file, index=False)
            
             self.parameters_df = pd.DataFrame(columns=["net", "epochs", "batch_size", "lr", "im_size", "training_size", "probs"])
@@ -187,11 +187,11 @@ class Trainer:
 
         return y_true, y_pred
 
-    def save_checkpoint(self, epoch, loss, f1):
+    def save_checkpoint(self, epoch, loss, f1, accuracy):
         self.parameters_df["epochs"] = [epoch]
         self.parameters_df.to_csv(self.parameters_file, index=False)
         
-        new_row = pd.DataFrame([{"epoch": epoch, "loss": loss, "f1_score": f1}])
+        new_row = pd.DataFrame([{"epoch": epoch, "loss": loss, "f1_score": f1, "accuracy": accuracy}])
         self._metrics_df = pd.concat([self._metrics_df, new_row], ignore_index=True)
         self._metrics_df.to_csv(self.metrics_file, index=False)
         
@@ -229,6 +229,6 @@ class Trainer:
 
             print(f"Epoch {epoch+1} | Loss: {epoch_loss:.4f} | Train Acc: {accuracy:.4f} | Train F1: {epoch_f1:.4f}")
 
-            self.save_checkpoint(epoch+1, epoch_loss, epoch_f1)
+            self.save_checkpoint(epoch+1, epoch_loss, epoch_f1, accuracy)
 
 
