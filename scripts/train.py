@@ -154,7 +154,6 @@ class Trainer:
         outputs = self._net(inputs)
         probs = torch.sigmoid(outputs)
         preds = (probs > PROBS).float()
-        print(probs)
         return outputs, probs, preds
 
     def predict(self, dataloader):
