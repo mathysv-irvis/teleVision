@@ -73,3 +73,29 @@ python train_model.py --model Net --batch 16 --epochs 5 --gen gen2
 --epochs: Number of epochs
 
 --gen : Generation folder to train on
+
+
+### Test a Model
+
+test_model.py test and plot the results of a trained neural network on generated data.
+
+Run:
+```python
+python test_model.py --show <training|batch|accuracy> --gen <generation_name> --epochs <epoch to show (only for accuracy)>
+```
+
+Examples:
+
+```python
+python test_model.py --show accuracy --epoch 3 --gen gen1
+python test_model.py --show batch --gen gen1
+python test_model.py --show training --gen gen1
+python test_model.py --show accuracy --gen gen1  # will pick last epoch automatically
+```
+
+--show : Function to call (training : plot metrics of training / batch : plot images from the first batch / accuracy : print the accuracy and precision of a given epoch (last one if not given)
+
+--epoch : Accuracy of the given epoch or last epoch if epoch is not given (only for function accuracy)
+
+--gen : Generation folder to test
+
