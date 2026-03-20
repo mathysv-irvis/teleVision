@@ -8,12 +8,20 @@ This repository contains tools to generate synthetic image artifacts and train d
 
 ```bash
 project-root/
-├── generator.py          # CLI for generating artifact images
-├── train_model.py        # CLI for training models on generated data
+├── generator.py           # CLI for generating artifact images
+├── train_model.py         # CLI for training models on generated data
+├── test_model.py          # CLI for testing models on generated data
 ├── scripts/
-│   ├── camera.py         # Camera & artifact generation logic
-│   └── DeepLearningCV/   # Neural network models & training functions
-├── outputs/              # Generated data and trained models (ignored by Git)
+│   ├── camera.py          # Camera pipeline
+│   ├── data.py            # Artifact generation logic
+│   ├── test.py            # Testing framework and function
+│   ├── train.py           # Trainer file to fit data on model
+│   ├── models/            # Neural network models
+│   └── utils/             
+│       ├── preprocess.py  # Preprocess methods for data formatting
+│       └── constant.py    # Constant file (can be finetuned)
+├── outputs/               # Generated data and trained models (ignored by Git)
+├── ressource/             # Images that can be input in the generator
 └── README.md
 ```
 
